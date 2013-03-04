@@ -17,19 +17,8 @@ class neo4j::ubuntu($version) {
                       Class['neo4j::linux'],
                       File['neo4j config file'],
                       File['neo4j auth extension link'],
-                      Exec['bump the minimum heap size'],
-                      Exec['bump the maximum heap size'],
+											File['neo4j wrapper conf']
       ];
-
-    'bump the minimum heap size':
-      command     => '/bin/echo "wrapper.java.initmemory=1024" >> /etc/neo4j/neo4j-wrapper.conf',
-      require     => Package['neo4j'],
-      unless      => '/bin/grep -q "^wrapper.java.initmemory"';
-
-    'bump the maximum heap size':
-      command     => '/bin/echo "wrapper.java.maxmemory=4096" >> /etc/neo4j/neo4j-wrapper.conf',
-      require     => Package['neo4j'],
-      unless      => '/bin/grep -q "^wrapper.java.maxmemory"';
   }
 
   file {
@@ -41,6 +30,13 @@ class neo4j::ubuntu($version) {
       path    => '/usr/share/neo4j-contrib/authentication-extension-1.8.1-fudge.jar',
       source  => 'puppet:///modules/neo4j/authentication-extension-1.8.1-fudge.jar',
       require => File['neo4j contrib dir'];
+
+    'neo4j wrapper conf':
+      path    => '/etc/neo4j/neo4j-wrapper.conf',
+      source  => 'puppet:///modules/neo4j/neo4j-wrapper.conf',
+      owner    => neo4j,
+			group    => adm,
+      require => Package['neo4j'];
 
     'neo4j auth extension link':
       ensure  => 'link',
